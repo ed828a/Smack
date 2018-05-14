@@ -13,4 +13,8 @@
     <string name="login">Login</string>
     <string name="send_message">Send message</string>
     <string name="add_channel">Add channel</string>
+    <string name="sign_up_here">Sign up here</string>
+    <string name="dont_have_an_account">Don\'t have an account?</string>
+    <string name="password">password</string>
+    <string name="email">email</string>
 </resources>
