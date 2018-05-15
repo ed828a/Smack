@@ -2,13 +2,10 @@ package com.example.edward.smack.Services
 
 import android.content.Context
 import android.util.Log
-import com.android.volley.Request
-import com.android.volley.RequestQueue
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
-import com.example.edward.smack.R.string.password
 import com.example.edward.smack.Utilities.URL_CREATE_USER
 import com.example.edward.smack.Utilities.URL_LOGIN
 import com.example.edward.smack.Utilities.URL_REGISTER
@@ -25,10 +22,6 @@ object AuthService {
     var userEnail = ""
     var userPassword = ""
     var authToken = ""
-    var userAvatarColor  = ""
-    var userAvatarName = ""
-    var userName = ""
-    var userId = ""
 
 //    lateinit var requestQueue: RequestQueue
 
@@ -43,12 +36,9 @@ object AuthService {
         jsonBody.put("password", password)
         val requestBody = jsonBody.toString()
 
-        // we expect string response.
+        // expecting string response.
         val registerRequest = object : StringRequest(Method.POST, url,
-                Response.Listener { response ->
-                    println("response: $response")
-                    complete(true)
-                },
+                Response.Listener { complete(true) },
                 Response.ErrorListener { error ->
                     Log.d("Error", "Register Error: $error")
                     complete(false)
@@ -74,9 +64,9 @@ object AuthService {
         jsonBody.put("password", password)
         val requestBody = jsonBody.toString()
 
+        // expecting JSONOBJECT response.
         val loginRequest = object : JsonObjectRequest(Method.POST, URL_LOGIN, null,
                 Response.Listener { response ->
-                    println(response) // parse JsonObject
                     try {
                         authToken = response.getString("token")
                         userEnail = response.getString("user")
@@ -143,8 +133,8 @@ object AuthService {
             }
 
             override fun getHeaders(): MutableMap<String, String> {
-//                val headers = HashMap<String, String>()
-                val headers: MutableMap<String, String> = mutableMapOf()
+                val headers = HashMap<String, String>()
+//                val headers: MutableMap<String, String> = mutableMapOf()
                 headers.put("Authorization", "Bearer $authToken")
                 return headers
             }

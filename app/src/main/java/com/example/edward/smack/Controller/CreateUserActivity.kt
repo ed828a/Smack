@@ -1,13 +1,18 @@
 package com.example.edward.smack.Controller
 
+import android.content.Intent
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.design.widget.Snackbar
+import android.support.v4.content.LocalBroadcastManager
 import android.view.View
+import android.widget.Toast
 import com.example.edward.smack.R
+import com.example.edward.smack.R.id.*
 import com.example.edward.smack.Services.AuthService
 import com.example.edward.smack.Services.UserDataService
+import com.example.edward.smack.Utilities.BROADCAST_USER_DATA_CHANGE
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -19,6 +24,8 @@ class CreateUserActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_user)
+
+        createSpinner.visibility = View.INVISIBLE
     }
 
     fun onGenerateUserAvatar(view: View) {
@@ -52,31 +59,64 @@ class CreateUserActivity : AppCompatActivity() {
     }
 
     fun onCreateUserClick(view: View) {
+
         val userName = createUserNameText.text.toString()
         val email = createEmailText.text.toString()
         val password = createPasswordText.text.toString()
-        createUserNameText.text.clear()
-        createEmailText.text.clear()
-        createPasswordText.text.clear()
 
-        AuthService.registerUser(this, email, password) { registerSuccess ->
-            if (registerSuccess) {
-                AuthService.loginUser(this, email, password) { loginSuccess ->
-                    if (loginSuccess) {
-                        AuthService.createUser(this, userName, email,
-                                userAvatar, avatarColor){createSuccess ->
-                            if ( createSuccess){
-                                println(UserDataService.avatarName)
-                                println(UserDataService.avatarColor)
-                                println(UserDataService.name)
-                                finish()
+
+        // here, you can check the length and special character for email and password
+        if (!userName.isEmpty() && !email.isEmpty() && !password.isEmpty()) {
+            enableSpinner(true)
+
+            AuthService.registerUser(this, email, password) { registerSuccess ->
+                if (registerSuccess) {
+                    AuthService.loginUser(this, email, password) { loginSuccess ->
+                        if (loginSuccess) {
+                            AuthService.createUser(this, userName, email,
+                                    userAvatar, avatarColor) { createSuccess ->
+                                if (createSuccess) {
+                                    val userDataChange = Intent(BROADCAST_USER_DATA_CHANGE)
+                                    LocalBroadcastManager.getInstance(this)
+                                            .sendBroadcast(userDataChange)
+
+                                    enableSpinner(false)
+                                    finish()
+                                } else {
+                                    errorToast()
+                                }
                             }
+                        } else {
+                            errorToast()
                         }
                     }
+                } else {
+                    errorToast()
                 }
-            } else {
-                println("Register failed")
             }
+        } else {
+             enableSpinner(false)
+            Toast.makeText(this,
+                    "Make sure user name, email and password are filled in. ",
+                    Toast.LENGTH_SHORT).show()
         }
     }
+
+    private fun enableSpinner(enable: Boolean) {
+        if (enable) {
+            createSpinner.visibility = View.VISIBLE
+        } else {
+            createSpinner.visibility = View.INVISIBLE
+        }
+        imageViewCreateAvatar.isEnabled = !enable
+        buttonBackgroundColor.isEnabled = !enable
+        buttonCreateUser.isEnabled = !enable
+    }
+
+    private  fun errorToast() {
+        enableSpinner(false)
+        Toast.makeText(this, "Something went wrong, please try again!",
+                Toast.LENGTH_SHORT).show()
+    }
+
 }
