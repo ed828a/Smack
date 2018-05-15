@@ -4,5 +4,7 @@ package com.example.edward.smack.Utilities
  * Created by Edward on 5/15/2018.
  */
  
- const val BASE_URL = "https://ed828chat.herokuapp.com/v1/"    // v1 is a part of the endpoint
+// for local hosting: http://10.0.2.2:3005/v1/   and the default ip for the simulator is 10.0.2.2
+const val BASE_URL = "https://ed828chat.herokuapp.com/v1/"    // v1 is a part of the endpoint
 const val URL_REGISTER = "${BASE_URL}account/register"
+const val URL_LOGIN = "${BASE_URL}account/login"

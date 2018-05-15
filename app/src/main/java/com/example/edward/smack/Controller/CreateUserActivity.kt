@@ -20,23 +20,23 @@ class CreateUserActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create_user)
     }
 
-     fun onGenerateUserAvatar(view: View){
-         val random = Random()
-         val color = random.nextInt(2) // this function generate next random integer
-                                                    // start from 0 to upbound which is input param,
-                                                    // but not be included
-         val avatar = random.nextInt(28)
-         userAvatar = when(color){
-             0 -> "light$avatar"
-             1 -> "dark$avatar"
-             else -> "dark$avatar"
-         }
+    fun onGenerateUserAvatar(view: View) {
+        val random = Random()
+        val color = random.nextInt(2) // this function generate next random integer
+        // start from 0 to upbound which is input param,
+        // but not be included
+        val avatar = random.nextInt(28)
+        userAvatar = when (color) {
+            0 -> "light$avatar"
+            1 -> "dark$avatar"
+            else -> "dark$avatar"
+        }
 
-         val resourceId = resources.getIdentifier(userAvatar, "drawable", packageName)
-         imageViewCreateAvatar.setImageResource(resourceId)
-     }
+        val resourceId = resources.getIdentifier(userAvatar, "drawable", packageName)
+        imageViewCreateAvatar.setImageResource(resourceId)
+    }
 
-    fun onGenerateBackgroundColorClick(view: View){
+    fun onGenerateBackgroundColorClick(view: View) {
         var random = Random()
         val r = random.nextInt(256)
         val g = random.nextInt(256)
@@ -50,12 +50,24 @@ class CreateUserActivity : AppCompatActivity() {
 
     }
 
-    fun onCreateUserClick(view: View){
-        AuthService.registerUser(this, "ed828a@gmail.com", "123456"){ boolean ->
-            if (boolean){
-                Snackbar.make(view, "Register successful", Snackbar.LENGTH_SHORT ).show()
+    fun onCreateUserClick(view: View) {
+        val userName = createUserNameText.text.toString()
+        val email = createEmailText.text.toString()
+        val password = createPasswordText.text.toString()
+        createUserNameText.text.clear()
+        createEmailText.text.clear()
+        createPasswordText.text.clear()
+
+        AuthService.registerUser(this, email, password) { registerSuccess ->
+            if (registerSuccess) {
+                AuthService.loginUser(this, email, password) { loginSuccess ->
+                    if (loginSuccess) {
+                        println(AuthService.authToken)
+                        println(AuthService.userEnail)
+                    }
+                }
             } else {
-                Snackbar.make(view, "Register failed", Snackbar.LENGTH_SHORT ).show()
+                println("Register failed")
             }
         }
     }
