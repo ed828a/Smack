@@ -8,3 +8,4 @@ package com.example.edward.smack.Utilities
 const val BASE_URL = "https://ed828chat.herokuapp.com/v1/"    // v1 is a part of the endpoint
 const val URL_REGISTER = "${BASE_URL}account/register"
 const val URL_LOGIN = "${BASE_URL}account/login"
+const val URL_CREATE_USER = "${BASE_URL}user/add"

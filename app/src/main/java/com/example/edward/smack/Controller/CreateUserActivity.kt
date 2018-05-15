@@ -7,6 +7,7 @@ import android.support.design.widget.Snackbar
 import android.view.View
 import com.example.edward.smack.R
 import com.example.edward.smack.Services.AuthService
+import com.example.edward.smack.Services.UserDataService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -62,8 +63,15 @@ class CreateUserActivity : AppCompatActivity() {
             if (registerSuccess) {
                 AuthService.loginUser(this, email, password) { loginSuccess ->
                     if (loginSuccess) {
-                        println(AuthService.authToken)
-                        println(AuthService.userEnail)
+                        AuthService.createUser(this, userName, email,
+                                userAvatar, avatarColor){createSuccess ->
+                            if ( createSuccess){
+                                println(UserDataService.avatarName)
+                                println(UserDataService.avatarColor)
+                                println(UserDataService.name)
+                                finish()
+                            }
+                        }
                     }
                 }
             } else {
