@@ -45,7 +45,7 @@ class CreateUserActivity : AppCompatActivity() {
     }
 
     fun onGenerateBackgroundColorClick(view: View) {
-        var random = Random()
+        val random = Random()
         val r = random.nextInt(256)
         val g = random.nextInt(256)
         val b = random.nextInt(256)
@@ -74,7 +74,7 @@ class CreateUserActivity : AppCompatActivity() {
                     AuthService.loginUser(this, email, password) { loginSuccess ->
                         if (loginSuccess) {
                             AuthService.createUser(this, userName, email,
-                                    userAvatar, avatarColor) { createSuccess ->
+                                    avatarColor, userAvatar) { createSuccess ->
                                 if (createSuccess) {
                                     val userDataChange = Intent(BROADCAST_USER_DATA_CHANGE)
                                     LocalBroadcastManager.getInstance(this)

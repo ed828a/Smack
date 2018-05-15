@@ -99,15 +99,15 @@ object AuthService {
                    avatarName: String, complete: (Boolean) -> Unit) {
 
         val jsonBody = JSONObject()
-        // note that the order is important, must be the same as what is expected by the API
         jsonBody.put("name", name)
         jsonBody.put("email", email)
-        jsonBody.put("avatarName", avatarName)
         jsonBody.put("avatarColor", avatarColor)
+        jsonBody.put("avatarName", avatarName)
         val requestBody = jsonBody.toString()
 
         val createRequest = object : JsonObjectRequest(Method.POST, URL_CREATE_USER, null,
                 Response.Listener { response ->
+                    println(response)
                     try {
                         UserDataService.avatarColor = response.getString("avatarColor")
                         UserDataService.avatarName = response.getString("avatarName")
