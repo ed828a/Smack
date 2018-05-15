@@ -1,11 +1,12 @@
-package com.example.edward.smack
+package com.example.edward.smack.Controller
 
-import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
+import android.support.design.widget.Snackbar
 import android.view.View
+import com.example.edward.smack.R
+import com.example.edward.smack.Services.AuthService
 import kotlinx.android.synthetic.main.activity_create_user.*
 import java.util.*
 
@@ -50,6 +51,12 @@ class CreateUserActivity : AppCompatActivity() {
     }
 
     fun onCreateUserClick(view: View){
-
+        AuthService.registerUser(this, "ed828a@gmail.com", "123456"){ boolean ->
+            if (boolean){
+                Snackbar.make(view, "Register successful", Snackbar.LENGTH_SHORT ).show()
+            } else {
+                Snackbar.make(view, "Register failed", Snackbar.LENGTH_SHORT ).show()
+            }
+        }
     }
 }
