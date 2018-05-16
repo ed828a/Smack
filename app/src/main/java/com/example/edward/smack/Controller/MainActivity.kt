@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.graphics.Color
 import android.os.Bundle
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
@@ -13,6 +14,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import com.example.edward.smack.R
+import com.example.edward.smack.R.id.*
 import com.example.edward.smack.Services.AuthService
 import com.example.edward.smack.Services.AuthService.isLoggedIn
 import com.example.edward.smack.Services.UserDataService
@@ -37,17 +39,24 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
     }
 
-        private val userDataChangeReceiver = object: BroadcastReceiver(){
+    private val userDataChangeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (AuthService.isLoggedIn){
+            if (AuthService.isLoggedIn) {
                 userNameNavHeader.text = UserDataService.name
                 userEmailNavHeader.text = UserDataService.email
-                Log.d("Image", ": ${UserDataService.avatarName}")
+                println("AvatarName: ${UserDataService.avatarName}")
+
                 val resourceId = resources.getIdentifier(UserDataService.avatarName,
                         "drawable", packageName)
                 userImageNavHeader.setImageResource(resourceId)
-                userImageNavHeader.setBackgroundColor(
-                        UserDataService.returnAvatarColor(UserDataService.avatarColor))
+
+                if (UserDataService.avatarColor == "[0.5, 0.5, 0.5, 1]") {
+                    userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
+                    println("AvatarColor: Color.TRANSPARENT")
+                } else {
+                    userImageNavHeader.setBackgroundColor(
+                            UserDataService.returnAvatarColor(UserDataService.avatarColor))
+                }
 
                 buttonLoginNavHeader.text = "Logout"
             }
@@ -64,7 +73,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onLoginBtnNavClick(view: View) {
-        if (AuthService.isLoggedIn){  // after Login, this button was clicked again means logout
+        if (AuthService.isLoggedIn) {  // after Login, this button was clicked again means logout
             reset()
         } else {
             val intent = Intent(this, LoginActivity::class.java)
@@ -73,9 +82,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun reset(){
+    private fun reset() {
         buttonLoginNavHeader.text = "Login"
-        UserDataService.id =""
+        UserDataService.id = ""
         UserDataService.avatarColor = ""
         UserDataService.avatarName = ""
         UserDataService.email = ""

@@ -18,7 +18,7 @@ import java.util.*
 
 class CreateUserActivity : AppCompatActivity() {
 
-    var userAvatar = "profileDefault"
+    var userAvatar = "profiledefault"
     var avatarColor = "[0.5, 0.5, 0.5, 1]"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,7 +31,7 @@ class CreateUserActivity : AppCompatActivity() {
     fun onGenerateUserAvatar(view: View) {
         val random = Random()
         val color = random.nextInt(2) // this function generate next random integer
-        // start from 0 to upbound which is input param,
+        // start from 0 to up-bound which is input param,
         // but not be included
         val avatar = random.nextInt(28)
         userAvatar = when (color) {
@@ -95,7 +95,7 @@ class CreateUserActivity : AppCompatActivity() {
                 }
             }
         } else {
-             enableSpinner(false)
+            enableSpinner(false)
             Toast.makeText(this,
                     "Make sure user name, email and password are filled in. ",
                     Toast.LENGTH_SHORT).show()
@@ -113,7 +113,7 @@ class CreateUserActivity : AppCompatActivity() {
         buttonCreateUser.isEnabled = !enable
     }
 
-    private  fun errorToast() {
+    private fun errorToast() {
         enableSpinner(false)
         Toast.makeText(this, "Something went wrong, please try again!",
                 Toast.LENGTH_SHORT).show()
