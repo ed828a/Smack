@@ -1,18 +1,18 @@
 package com.example.edward.smack.Controller
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.app.ProgressDialog.show
+import android.content.*
 import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import com.example.edward.smack.R
 import com.example.edward.smack.R.id.*
 import com.example.edward.smack.Services.AuthService
@@ -20,6 +20,7 @@ import com.example.edward.smack.Services.AuthService.isLoggedIn
 import com.example.edward.smack.Services.UserDataService
 import com.example.edward.smack.Utilities.BROADCAST_USER_DATA_CHANGE
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
@@ -34,9 +35,15 @@ class MainActivity : AppCompatActivity() {
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
+//        hideKeyboard()
 
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
+    }
+
+    override fun onStart() {
+        super.onStart()
+        hideKeyboard()
     }
 
     private val userDataChangeReceiver = object : BroadcastReceiver() {
@@ -93,6 +100,7 @@ class MainActivity : AppCompatActivity() {
         AuthService.userEnail = ""
         AuthService.userPassword = ""
         AuthService.authToken = ""
+        AuthService.isLoggedIn = false
         userImageNavHeader.setImageResource(R.drawable.profiledefault)
         userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
         userEmailNavHeader.text = ""
@@ -100,11 +108,35 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onAddChannelClick(view: View) {
+        if (AuthService.isLoggedIn) {
+            val dialogBuilder = AlertDialog.Builder(this)
+            val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
+            val tv = dialogBuilder.setView(dialogView)
+                    .setPositiveButton("Add", DialogInterface.OnClickListener { dialog, which ->
+                        //store channel name and channel description
+                        val channelName = dialogView.addChannelNameText.text.toString()
+                        val channelDescription = dialogView.addChannelDescriptionText.text.toString()
+                        
+                        //create channel with channel name and description
+                        hideKeyboard()
+                    })
+                    .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->
+                        hideKeyboard()
+                    })
+                    .show()
 
+        }
     }
 
     fun onSendMessageButtonClick(view: View) {
 
 
+    }
+
+    private fun hideKeyboard() {
+        val inputManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+        if (inputManager.isAcceptingText) {
+            inputManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
+        }
     }
 }
