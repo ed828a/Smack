@@ -13,14 +13,17 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import com.example.edward.smack.Model.Channel
 import com.example.edward.smack.R
 import com.example.edward.smack.R.id.*
 import com.example.edward.smack.Services.AuthService
 import com.example.edward.smack.Services.AuthService.isLoggedIn
+import com.example.edward.smack.Services.MessageService
 import com.example.edward.smack.Services.UserDataService
 import com.example.edward.smack.Utilities.BROADCAST_USER_DATA_CHANGE
 import com.example.edward.smack.Utilities.SOCKET_URL
 import io.socket.client.IO
+import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
@@ -43,11 +46,12 @@ class MainActivity : AppCompatActivity() {
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
         socket.connect()
+        socket.on("channelCreated", onNewChannel)
 
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
 //        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
 //                IntentFilter(BROADCAST_USER_DATA_CHANGE))
 //        socket.connect()
@@ -155,4 +159,26 @@ class MainActivity : AppCompatActivity() {
             inputManager.hideSoftInputFromWindow(currentFocus.windowToken, 0)
         }
     }
+
+    /**
+     * this callback performs on a worker or background thread.
+     */
+    private val onNewChannel = Emitter.Listener { args: Array<out Any>? ->
+        runOnUiThread {
+            if (args != null) {
+                val channelName = args[0] as String
+                val channelDescription = args[1] as String
+                val channelId = args[2] as String
+
+                val newChannel = Channel(channelName,channelDescription,channelId)
+                MessageService.channels.add(newChannel)
+
+                println(newChannel.name)
+                println(newChannel.description)
+                println(newChannel.id)
+            }
+        }
+
+    }
+
 }
