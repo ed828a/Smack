@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.ArrayAdapter
 import com.example.edward.smack.Model.Channel
 import com.example.edward.smack.R
 import com.example.edward.smack.R.id.*
@@ -32,7 +33,15 @@ import kotlinx.android.synthetic.main.nav_header_main.*
 class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
+    lateinit var listViewAdapter: ArrayAdapter<Channel>
 
+    private fun setupListViewAdapter(){
+        listViewAdapter = ArrayAdapter(this,
+                android.R.layout.simple_list_item_1, MessageService.channels)
+        channel_list.adapter = listViewAdapter
+        val v = channel_list.adapter
+
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -43,10 +52,13 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
+        setupListViewAdapter()
+
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
         socket.connect()
         socket.on("channelCreated", onNewChannel)
+
 
     }
 
@@ -85,6 +97,17 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 buttonLoginNavHeader.text = "Logout"
+
+                if (context != null) {
+                    MessageService.getChannels(context) { complete ->
+                        if (complete){
+                            listViewAdapter.notifyDataSetChanged()
+                            // listAdapter doesn't have this function,
+                            // so we need listViewAdpater(ArrayAdapter) as middle variable
+                            // this function tell listview to reload data.
+                        }
+                    }
+                }
             }
         }
     }
@@ -173,9 +196,7 @@ class MainActivity : AppCompatActivity() {
                 val newChannel = Channel(channelName,channelDescription,channelId)
                 MessageService.channels.add(newChannel)
 
-                println(newChannel.name)
-                println(newChannel.description)
-                println(newChannel.id)
+                listViewAdapter.notifyDataSetChanged()
             }
         }
 
