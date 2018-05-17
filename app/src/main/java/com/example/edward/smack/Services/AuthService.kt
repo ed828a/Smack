@@ -151,7 +151,7 @@ object AuthService {
                         UserDataService.email = response.getString("email")
                         UserDataService.name = response.getString("name")
                         UserDataService.id = response.getString("_id")
-
+                        println("Response: $response")
                         val userDataChange = Intent(BROADCAST_USER_DATA_CHANGE)
                         LocalBroadcastManager.getInstance(context).sendBroadcast(userDataChange)
 

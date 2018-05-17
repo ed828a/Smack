@@ -19,12 +19,16 @@ import com.example.edward.smack.Services.AuthService
 import com.example.edward.smack.Services.AuthService.isLoggedIn
 import com.example.edward.smack.Services.UserDataService
 import com.example.edward.smack.Utilities.BROADCAST_USER_DATA_CHANGE
+import com.example.edward.smack.Utilities.SOCKET_URL
+import io.socket.client.IO
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val socket = IO.socket(SOCKET_URL)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,15 +39,26 @@ class MainActivity : AppCompatActivity() {
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
-//        hideKeyboard()
 
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
+        socket.connect()
+
     }
 
     override fun onStart() {
         super.onStart()
-        hideKeyboard()
+//        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
+//                IntentFilter(BROADCAST_USER_DATA_CHANGE))
+//        socket.connect()
+
+    }
+
+
+    override fun onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        socket.disconnect()
+        super.onDestroy()
     }
 
     private val userDataChangeReceiver = object : BroadcastReceiver() {
@@ -116,12 +131,13 @@ class MainActivity : AppCompatActivity() {
                         //store channel name and channel description
                         val channelName = dialogView.addChannelNameText.text.toString()
                         val channelDescription = dialogView.addChannelDescriptionText.text.toString()
-                        
+
                         //create channel with channel name and description
-                        hideKeyboard()
+                        socket.emit("newChannel", channelName, channelDescription)
+
                     })
                     .setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, which ->
-                        hideKeyboard()
+
                     })
                     .show()
 
@@ -130,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
     fun onSendMessageButtonClick(view: View) {
 
-
+        hideKeyboard()
     }
 
     private fun hideKeyboard() {
