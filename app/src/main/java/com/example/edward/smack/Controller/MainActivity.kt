@@ -12,6 +12,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import com.example.edward.smack.Model.Channel
+import com.example.edward.smack.Model.Message
 import com.example.edward.smack.R
 import com.example.edward.smack.Services.AuthService
 import com.example.edward.smack.Services.MessageService
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
         socket.connect()
         socket.on("channelCreated", onNewChannel)
+        socket.on("messageCreated", onNewMessage)
         if (App.sharedPreferences.isLoggedIn){
             AuthService.findUserByEmail(this){
                 // nothing need to do
@@ -190,8 +192,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onSendMessageButtonClick(view: View) {
+        if (App.sharedPreferences.isLoggedIn &&
+                messageTextField.text.isNotEmpty() && selectedChannel != null){
+            val userId = UserDataService.id
+            val channelId = selectedChannel!!.id
+            // when sending message, the order of parameters is important,
+            // mis-ordered parameters cause a disaster
+            socket.emit("newMessage", messageTextField.text.toString(),
+                    userId, channelId, UserDataService.name, UserDataService.avatarName,
+                    UserDataService.avatarColor)
 
-        hideKeyboard()
+            messageTextField.text.clear()
+            hideKeyboard()
+        }
+
     }
 
     private fun hideKeyboard() {
@@ -217,7 +231,26 @@ class MainActivity : AppCompatActivity() {
                 listViewAdapter.notifyDataSetChanged()
             }
         }
+    }
 
+    private val onNewMessage = Emitter.Listener { args: Array<out Any>? ->
+        runOnUiThread {
+            if (args != null){
+                val msgBody = args[0] as String
+                val userId = args[1] as String
+                val channelId = args[2] as String
+                val userName = args[3] as String
+                val userAvatar = args[4] as String
+                val userAvatarColor = args[5] as String
+                val msgId = args[6] as String
+                val msgTimeStamp = args[7] as String
+
+                val newMessage = Message(msgBody, userId, channelId, userName, userAvatar,
+                        userAvatarColor, msgId, msgTimeStamp)
+                MessageService.messages.add(newMessage)
+
+            }
+        }
     }
 
 }
