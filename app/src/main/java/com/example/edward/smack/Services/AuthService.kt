@@ -25,7 +25,7 @@ object AuthService {
 
 //    lateinit var requestQueue: RequestQueue
 
-    fun registerUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit) {
+    fun registerUser(email: String, password: String, complete: (Boolean) -> Unit) {
         val url = URL_REGISTER
 
         App.sharedPreferences.userEmail = email
@@ -53,12 +53,10 @@ object AuthService {
             }
         }
 
-//        requestQueue = Volley.newRequestQueue(context)
-//        requestQueue.add(registerRequest)
         App.sharedPreferences.requestQueue.add(registerRequest)
     }
 
-    fun loginUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit) {
+    fun loginUser(email: String, password: String, complete: (Boolean) -> Unit) {
         val jsonBody = JSONObject()
         jsonBody.put("email", email)
         jsonBody.put("password", password)
@@ -94,8 +92,7 @@ object AuthService {
 //        requestQueue.add(loginRequest)
     }
 
-    fun createUser(context: Context, name: String,
-                   email: String, avatarColor: String,
+    fun createUser(name: String, email: String, avatarColor: String,
                    avatarName: String, complete: (Boolean) -> Unit) {
 
         val jsonBody = JSONObject()

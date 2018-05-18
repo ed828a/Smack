@@ -23,12 +23,14 @@ import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.add_channel_dialog.view.*
 import kotlinx.android.synthetic.main.app_bar_main.*
+import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
     lateinit var listViewAdapter: ArrayAdapter<Channel>
+    var selectedChannel: Channel? = null
 
     private fun setupListViewAdapter(){
         listViewAdapter = ArrayAdapter(this,
@@ -46,6 +48,11 @@ class MainActivity : AppCompatActivity() {
         toggle.syncState()
 
         setupListViewAdapter()
+        channel_list.setOnItemClickListener { parent, view, position, id ->
+            selectedChannel = MessageService.channels[position]
+            drawer_layout.closeDrawer(GravityCompat.START)
+            updateWithChannel()
+        }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
@@ -98,12 +105,18 @@ class MainActivity : AppCompatActivity() {
                 buttonLoginNavHeader.text = "Logout"
 
                 if (context != null) {
-                    MessageService.getChannels(context) { complete ->
+                    MessageService.getChannels { complete ->
                         if (complete){
-                            listViewAdapter.notifyDataSetChanged()
-                            // listAdapter doesn't have this function,
-                            // so we need listViewAdpater(ArrayAdapter) as middle variable
-                            // this function tell listview to reload data.
+                            if (MessageService.channels.count() > 0){
+                                // set the default selectedChannel
+                                selectedChannel = MessageService.channels[0]
+                                listViewAdapter.notifyDataSetChanged()
+                                // listAdapter doesn't have this function,
+                                // so we need listViewAdpater(ArrayAdapter) as middle variable
+                                // this function tell listview to reload data.
+
+                                updateWithChannel()
+                            }
                         }
                     }
                 }
@@ -111,6 +124,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun updateWithChannel(){
+        mainChannelName.text = "#${selectedChannel?.name}"
+        // download messages for channel
+    }
 
     override fun onBackPressed() {
         if (drawer_layout.isDrawerOpen(GravityCompat.START)) {
@@ -146,7 +163,7 @@ class MainActivity : AppCompatActivity() {
         userEmailNavHeader.text = ""
         userNameNavHeader.text = ""
 
-        MessageService.channels.clear()
+//        MessageService.channels.clear()
 
     }
 
