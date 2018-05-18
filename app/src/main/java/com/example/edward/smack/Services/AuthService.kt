@@ -7,7 +7,7 @@ import android.util.Log
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonObjectRequest
 import com.android.volley.toolbox.StringRequest
-import com.android.volley.toolbox.Volley
+import com.example.edward.smack.Controller.App
 import com.example.edward.smack.Utilities.*
 import org.json.JSONException
 import org.json.JSONObject
@@ -18,18 +18,18 @@ import org.json.JSONObject
 
 object AuthService {
 
-    var isLoggedIn = false
-    var userEnail = ""
-    var userPassword = ""
-    var authToken = ""
+//    var isLoggedIn = false
+//    var userEmail = ""
+//    var userPassword = ""
+//    var authToken = ""
 
 //    lateinit var requestQueue: RequestQueue
 
     fun registerUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit) {
         val url = URL_REGISTER
 
-        userEnail = email
-        userPassword = password
+        App.sharedPreferences.userEmail = email
+        App.sharedPreferences.password = password
 
         val jsonBody = JSONObject()
         jsonBody.put("email", email)
@@ -55,7 +55,7 @@ object AuthService {
 
 //        requestQueue = Volley.newRequestQueue(context)
 //        requestQueue.add(registerRequest)
-        Volley.newRequestQueue(context).add(registerRequest)
+        App.sharedPreferences.requestQueue.add(registerRequest)
     }
 
     fun loginUser(context: Context, email: String, password: String, complete: (Boolean) -> Unit) {
@@ -68,9 +68,9 @@ object AuthService {
         val loginRequest = object : JsonObjectRequest(Method.POST, URL_LOGIN, null,
                 Response.Listener { response ->
                     try {
-                        authToken = response.getString("token")
-                        userEnail = response.getString("user")
-                        isLoggedIn = true
+                        App.sharedPreferences.authToken = response.getString("token")
+                        App.sharedPreferences.userEmail = response.getString("user")
+                        App.sharedPreferences.isLoggedIn = true
                         complete(true)
                     } catch (e: JSONException) {
                         Log.d("JSONException", "Exception: ${e.localizedMessage}")
@@ -90,7 +90,7 @@ object AuthService {
             }
         }
 
-        Volley.newRequestQueue(context).add(loginRequest)
+        App.sharedPreferences.requestQueue.add(loginRequest)
 //        requestQueue.add(loginRequest)
     }
 
@@ -134,16 +134,17 @@ object AuthService {
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
 //                val headers: MutableMap<String, String> = mutableMapOf()
-                headers.put("Authorization", "Bearer $authToken")
+                headers.put("Authorization", "Bearer ${App.sharedPreferences.authToken}")
                 return headers
             }
         }
 
-        Volley.newRequestQueue(context).add(createRequest)
+        App.sharedPreferences.requestQueue.add(createRequest)
     }
 
     fun findUserByEmail(context: Context, complete: (Boolean) -> Unit){
-        val findUserRequest = object : JsonObjectRequest(Method.GET, "$URL_GET_USER$userEnail", null,
+        val findUserRequest = object : JsonObjectRequest(Method.GET,
+                "$URL_GET_USER${App.sharedPreferences.userEmail}", null,
                 Response.Listener {response ->
                     try {
                         UserDataService.avatarColor = response.getString("avatarColor")
@@ -172,13 +173,13 @@ object AuthService {
 
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers.put("Authorization", "Bearer $authToken")
+                headers.put("Authorization", "Bearer ${App.sharedPreferences.authToken}")
 
                 return headers
             }
         }
 
-        Volley.newRequestQueue(context).add(findUserRequest)
+        App.sharedPreferences.requestQueue.add(findUserRequest)
     }
 
 

@@ -1,24 +1,19 @@
 package com.example.edward.smack.Controller
 
-import android.app.ProgressDialog.show
 import android.content.*
 import android.graphics.Color
 import android.os.Bundle
-import android.support.v4.content.ContextCompat.startActivity
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import com.example.edward.smack.Model.Channel
 import com.example.edward.smack.R
-import com.example.edward.smack.R.id.*
 import com.example.edward.smack.Services.AuthService
-import com.example.edward.smack.Services.AuthService.isLoggedIn
 import com.example.edward.smack.Services.MessageService
 import com.example.edward.smack.Services.UserDataService
 import com.example.edward.smack.Utilities.BROADCAST_USER_DATA_CHANGE
@@ -39,8 +34,6 @@ class MainActivity : AppCompatActivity() {
         listViewAdapter = ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, MessageService.channels)
         channel_list.adapter = listViewAdapter
-        val v = channel_list.adapter
-
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,6 +51,11 @@ class MainActivity : AppCompatActivity() {
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
         socket.connect()
         socket.on("channelCreated", onNewChannel)
+        if (App.sharedPreferences.isLoggedIn){
+            AuthService.findUserByEmail(this){
+                // nothing need to do
+            }
+        }
 
 
     }
@@ -79,7 +77,7 @@ class MainActivity : AppCompatActivity() {
 
     private val userDataChangeReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            if (AuthService.isLoggedIn) {
+            if (App.sharedPreferences.isLoggedIn) {
                 userNameNavHeader.text = UserDataService.name
                 userEmailNavHeader.text = UserDataService.email
                 println("AvatarName: ${UserDataService.avatarName}")
@@ -88,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                         "drawable", packageName)
                 userImageNavHeader.setImageResource(resourceId)
 
+                println("color: ${UserDataService.avatarColor}")
                 if (UserDataService.avatarColor == "[0.5, 0.5, 0.5, 1]") {
                     userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
                     println("AvatarColor: Color.TRANSPARENT")
@@ -122,7 +121,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onLoginBtnNavClick(view: View) {
-        if (AuthService.isLoggedIn) {  // after Login, this button was clicked again means logout
+        if (App.sharedPreferences.isLoggedIn) {  // after Login, this button was clicked again means logout
             reset()
         } else {
             val intent = Intent(this, LoginActivity::class.java)
@@ -138,19 +137,21 @@ class MainActivity : AppCompatActivity() {
         UserDataService.avatarName = ""
         UserDataService.email = ""
         UserDataService.name = ""
-        AuthService.isLoggedIn = false
-        AuthService.userEnail = ""
-        AuthService.userPassword = ""
-        AuthService.authToken = ""
-        AuthService.isLoggedIn = false
+        App.sharedPreferences.isLoggedIn = false
+        App.sharedPreferences.userEmail = ""
+        App.sharedPreferences.password = ""
+        App.sharedPreferences.authToken = ""
         userImageNavHeader.setImageResource(R.drawable.profiledefault)
         userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
         userEmailNavHeader.text = ""
         userNameNavHeader.text = ""
+
+        MessageService.channels.clear()
+
     }
 
     fun onAddChannelClick(view: View) {
-        if (AuthService.isLoggedIn) {
+        if (App.sharedPreferences.isLoggedIn) {
             val dialogBuilder = AlertDialog.Builder(this)
             val dialogView = layoutInflater.inflate(R.layout.add_channel_dialog, null)
             val tv = dialogBuilder.setView(dialogView)

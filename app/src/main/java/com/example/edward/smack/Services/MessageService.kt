@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import com.android.volley.Response
 import com.android.volley.toolbox.JsonArrayRequest
-import com.android.volley.toolbox.Volley
+import com.example.edward.smack.Controller.App
 import com.example.edward.smack.Model.Channel
 import com.example.edward.smack.Utilities.URL_GET_CHANNELS
 import org.json.JSONException
@@ -33,6 +33,15 @@ object MessageService {
                                 val newChannel = Channel(name, chanDesc, channelId)
 
                                 channels.add(newChannel)
+                                /**
+                                 * this application is coded in java style, like above.
+                                 * if in Kotlin style, they should be like below:
+                                 * I will Kotlin stylize the app after the course
+
+                                with(channel){
+                                    channels.add(Channel(getString("name"), getString("description"), getString("_id")))
+                                }
+                                */
                             }
                             complete(true)
 
@@ -53,12 +62,12 @@ object MessageService {
 
             override fun getHeaders(): MutableMap<String, String> {
                 val headers = HashMap<String, String>()
-                headers.put("Authorization", "Bearer ${AuthService.authToken}")
+                headers.put("Authorization", "Bearer ${App.sharedPreferences.authToken}")
 
                 return headers
             }
         }
 
-        Volley.newRequestQueue(context).add(channelsRequest)
+        App.sharedPreferences.requestQueue.add(channelsRequest)
     }
 }

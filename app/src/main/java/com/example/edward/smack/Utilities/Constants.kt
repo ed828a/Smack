@@ -15,3 +15,10 @@ const val URL_GET_CHANNELS = "${BASE_URL}channel/"
 
 // Broadcast Constants
 const val BROADCAST_USER_DATA_CHANGE = "BROADCAST_USER_DATA_CHANGE"
+
+// SharedPreferences Constants
+const val PREFS_FILENAME = "prefs"
+const val IS_LOGGED_IN = "isLoggedIn"
+const val AUTH_TOKEN = "authToken"
+const val USER_EMAIL = "userEmail"
+const val USER_PASSWORD = "password"
