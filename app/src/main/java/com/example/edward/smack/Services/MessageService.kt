@@ -20,8 +20,8 @@ object MessageService {
     val channels = ArrayList<Channel>()
     val messages = ArrayList<Message>()
 
-    fun getChannels(complete: (Boolean) -> Unit) {
 
+    fun getChannels(complete: (Boolean) -> Unit) {
 
         val channelsRequest = object : JsonArrayRequest(Method.GET, URL_GET_CHANNELS, null,
                 Response.Listener { response ->
@@ -132,5 +132,19 @@ object MessageService {
     fun clearChannelsAndMessages(){
         channels.clear()
         messages.clear()
+    }
+
+
+    /**
+     * default return is the first Channel
+     */
+    fun getChannelById(channelId: String): Channel {
+        for (channel in channels){
+            if (channel.id == channelId){
+                return channel
+            }
+        }
+
+        return channels[0]
     }
 }

@@ -23,3 +23,7 @@ const val IS_LOGGED_IN = "isLoggedIn"
 const val AUTH_TOKEN = "authToken"
 const val USER_EMAIL = "userEmail"
 const val USER_PASSWORD = "password"
+const val USER_CHANNEL_ID = "channelId"
+
+// SavedInstanceState Constants
+const val SAVE_CHANNEL_ID = "channelId"

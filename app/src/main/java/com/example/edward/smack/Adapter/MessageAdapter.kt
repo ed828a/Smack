@@ -2,6 +2,7 @@ package com.example.edward.smack.Adapter
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +10,9 @@ import com.example.edward.smack.Model.Message
 import com.example.edward.smack.R
 import com.example.edward.smack.Services.UserDataService
 import kotlinx.android.synthetic.main.message_list_view.view.*
+import java.text.ParseException
+import java.text.SimpleDateFormat
+import java.util.*
 
 /*
  * Created by Edward on 5/18/2018.
@@ -31,7 +35,7 @@ class MessageAdapter(val context: Context, private val messages: ArrayList<Messa
         holder.messageImage?.setImageResource(resourceId)
         holder.messageImage?.setBackgroundColor(UserDataService.returnAvatarColor(message.userAvatarColor))
         holder.messageUserName?.text = message.userName
-        holder.messageTimeStamp?.text = message.timeStamp
+        holder.messageTimeStamp?.text = parseTimeStamp(message.timeStamp)
         holder.messageBody?.text = message.messageBody
     }
 
@@ -40,5 +44,24 @@ class MessageAdapter(val context: Context, private val messages: ArrayList<Messa
         val messageUserName = itemView?.messageUserNameText
         val messageTimeStamp = itemView?.messageTimeStampText
         val messageBody = itemView?.messageBodyText
+    }
+
+    fun parseTimeStamp(timeStamp: String): String {
+        // input:   2018-05-18T11:39:44.888Z
+        // output: Monday 4:35 PM
+
+        val ISO8601DATEFORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+        val isoFormatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+        isoFormatter.timeZone = TimeZone.getTimeZone("UTC")
+        var convertedDate = Date()
+        try {
+            convertedDate = isoFormatter.parse(timeStamp)
+        } catch (e: ParseException){
+            Log.d("PARSE", "Can not parse date")
+            e.printStackTrace()
+        }
+
+        val outDateString = SimpleDateFormat("EEE, MMM d, h:mm a", Locale.getDefault())
+        return outDateString.format(convertedDate)
     }
 }

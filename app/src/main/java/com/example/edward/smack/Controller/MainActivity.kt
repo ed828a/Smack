@@ -21,6 +21,7 @@ import com.example.edward.smack.Services.AuthService
 import com.example.edward.smack.Services.MessageService
 import com.example.edward.smack.Services.UserDataService
 import com.example.edward.smack.Utilities.BROADCAST_USER_DATA_CHANGE
+import com.example.edward.smack.Utilities.SAVE_CHANNEL_ID
 import com.example.edward.smack.Utilities.SOCKET_URL
 import io.socket.client.IO
 import io.socket.emitter.Emitter
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         setupMessageListView()
         channel_list.setOnItemClickListener { parent, view, position, id ->
             selectedChannel = MessageService.channels[position]
+            App.sharedPreferences.selectedChannelId = MessageService.channels[position].id
             drawer_layout.closeDrawer(GravityCompat.START)
             updateWithChannel()
         }
@@ -63,10 +65,26 @@ class MainActivity : AppCompatActivity() {
         if (App.sharedPreferences.isLoggedIn){
             AuthService.findUserByEmail(this){
                 // nothing need to do
+                if (savedInstanceState != null){
+                    selectedChannel = savedInstanceState?.getParcelable(SAVE_CHANNEL_ID)
+                }
+                println("onCreate: selectedChannel = $selectedChannel")
             }
         }
 
 
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        super.onSaveInstanceState(outState)
+        outState?.putParcelable(SAVE_CHANNEL_ID, selectedChannel )
+        println("onSaveInstanceState: selectedChannel = $selectedChannel")
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        selectedChannel = savedInstanceState?.getParcelable(SAVE_CHANNEL_ID)
+        println("onRestoreInstanceState: selectChannel = $selectedChannel")
     }
 
     private fun setupListViewAdapter(){
@@ -79,14 +97,6 @@ class MainActivity : AppCompatActivity() {
         messageListView.adapter = MessageAdapter(this, MessageService.messages)
 
         messageListView.layoutManager = LinearLayoutManager(this)
-    }
-
-    override fun onResume() {
-        super.onResume()
-//        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
-//                IntentFilter(BROADCAST_USER_DATA_CHANGE))
-//        socket.connect()
-
     }
 
 
@@ -122,8 +132,8 @@ class MainActivity : AppCompatActivity() {
                     MessageService.getChannels { complete ->
                         if (complete){
                             if (MessageService.channels.count() > 0){
-                                // set the default selectedChannel
-                                selectedChannel = MessageService.channels[0]
+                                // the default selectedChannel is MessageService.channels[0]
+                                selectedChannel = MessageService.getChannelById(App.sharedPreferences.selectedChannelId)
                                 listViewAdapter.notifyDataSetChanged()
                                 // listAdapter doesn't have this function,
                                 // so we need listViewAdpater(ArrayAdapter) as middle variable
@@ -142,6 +152,7 @@ class MainActivity : AppCompatActivity() {
         mainChannelName.text = "#${selectedChannel?.name}"
         // download messages for channel
         if(selectedChannel != null) {
+            println("updateWithChannel: selectedChannel = $selectedChannel")
             MessageService.getMessages(selectedChannel!!.id) { complete ->
                 if (complete){
                     // notify recyclerView adapter that data changed.
@@ -189,10 +200,12 @@ class MainActivity : AppCompatActivity() {
         App.sharedPreferences.userEmail = ""
         App.sharedPreferences.password = ""
         App.sharedPreferences.authToken = ""
+        App.sharedPreferences.selectedChannelId = ""
         userImageNavHeader.setImageResource(R.drawable.profiledefault)
         userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
         userEmailNavHeader.text = ""
         userNameNavHeader.text = ""
+        mainChannelName.text = "Please log in"
 
         MessageService.clearChannelsAndMessages()
         messageListView.adapter.notifyDataSetChanged()
@@ -258,6 +271,8 @@ class MainActivity : AppCompatActivity() {
 
                     val newChannel = Channel(channelName, channelDescription, channelId)
                     MessageService.channels.add(newChannel)
+                    // store the cursor channel--selected channel
+                    App.sharedPreferences.selectedChannelId = channelId
 
                     listViewAdapter.notifyDataSetChanged()
                 }

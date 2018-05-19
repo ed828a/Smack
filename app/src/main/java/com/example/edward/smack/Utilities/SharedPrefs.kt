@@ -3,6 +3,7 @@ package com.example.edward.smack.Utilities
 import android.content.Context
 import android.content.SharedPreferences
 import com.android.volley.toolbox.Volley
+import java.nio.channels.Channel
 
 /*
  * Created by Edward on 5/18/2018.
@@ -28,6 +29,10 @@ class SharedPrefs(context: Context) {
     var password: String
         get() = prefs.getString(USER_PASSWORD, "")
         set(value) = prefs.edit().putString(USER_PASSWORD, value).apply()
+
+    var selectedChannelId: String
+        get() = prefs.getString(USER_CHANNEL_ID, "")
+        set(value) = prefs.edit().putString(USER_CHANNEL_ID, value).apply()
 
 
     // this requestQueue should not be here
