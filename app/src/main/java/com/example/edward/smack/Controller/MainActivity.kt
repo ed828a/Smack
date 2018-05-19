@@ -9,6 +9,7 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
+import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
@@ -59,25 +60,31 @@ class MainActivity : AppCompatActivity() {
 
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver,
                 IntentFilter(BROADCAST_USER_DATA_CHANGE))
+
         socket.connect()
         socket.on("channelCreated", onNewChannel)
         socket.on("messageCreated", onNewMessage)
-        if (App.sharedPreferences.isLoggedIn){
-            AuthService.findUserByEmail(this){
-                // nothing need to do
-                if (savedInstanceState != null){
+
+        if (App.sharedPreferences.isLoggedIn) {
+            AuthService.findUserByEmail(this) {
+                if (savedInstanceState != null) {
                     selectedChannel = savedInstanceState?.getParcelable(SAVE_CHANNEL_ID)
                 }
-                println("onCreate: selectedChannel = $selectedChannel")
             }
         }
 
+        messageTextField.setOnEditorActionListener { textView, actionId, keyEvent ->
+            if ( keyEvent.action == KeyEvent.ACTION_DOWN) {
+                onSendMessageButtonClick(textView)
+            }
+            true
+        }
 
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
-        outState?.putParcelable(SAVE_CHANNEL_ID, selectedChannel )
+        outState?.putParcelable(SAVE_CHANNEL_ID, selectedChannel)
         println("onSaveInstanceState: selectedChannel = $selectedChannel")
     }
 
@@ -87,13 +94,13 @@ class MainActivity : AppCompatActivity() {
         println("onRestoreInstanceState: selectChannel = $selectedChannel")
     }
 
-    private fun setupListViewAdapter(){
+    private fun setupListViewAdapter() {
         listViewAdapter = ArrayAdapter(this,
                 android.R.layout.simple_list_item_1, MessageService.channels)
         channel_list.adapter = listViewAdapter
     }
 
-    private fun setupMessageListView(){
+    private fun setupMessageListView() {
         messageListView.adapter = MessageAdapter(this, MessageService.messages)
 
         messageListView.layoutManager = LinearLayoutManager(this)
@@ -130,8 +137,8 @@ class MainActivity : AppCompatActivity() {
 
                 if (context != null) {
                     MessageService.getChannels { complete ->
-                        if (complete){
-                            if (MessageService.channels.count() > 0){
+                        if (complete) {
+                            if (MessageService.channels.count() > 0) {
                                 // the default selectedChannel is MessageService.channels[0]
                                 selectedChannel = MessageService.getChannelById(App.sharedPreferences.selectedChannelId)
                                 listViewAdapter.notifyDataSetChanged()
@@ -148,18 +155,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun updateWithChannel(){
+    fun updateWithChannel() {
         mainChannelName.text = "#${selectedChannel?.name}"
         // download messages for channel
-        if(selectedChannel != null) {
+        if (selectedChannel != null) {
             println("updateWithChannel: selectedChannel = $selectedChannel")
             MessageService.getMessages(selectedChannel!!.id) { complete ->
-                if (complete){
+                if (complete) {
                     // notify recyclerView adapter that data changed.
                     messageListView.adapter.notifyDataSetChanged()
 
                     // to display the last message in the messages
-                    if (messageListView.adapter.itemCount > 0){
+                    if (messageListView.adapter.itemCount > 0) {
                         messageListView.smoothScrollToPosition(
                                 messageListView.adapter.itemCount - 1)
                     }
@@ -190,7 +197,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun reset() {
-        buttonLoginNavHeader.text = "Login"
+        buttonLoginNavHeader.text = getString(R.string.login)
         UserDataService.id = ""
         UserDataService.avatarColor = ""
         UserDataService.avatarName = ""
@@ -205,7 +212,7 @@ class MainActivity : AppCompatActivity() {
         userImageNavHeader.setBackgroundColor(Color.TRANSPARENT)
         userEmailNavHeader.text = ""
         userNameNavHeader.text = ""
-        mainChannelName.text = "Please log in"
+        mainChannelName.text = getString(R.string.please_log_in)
 
         MessageService.clearChannelsAndMessages()
         messageListView.adapter.notifyDataSetChanged()
@@ -236,7 +243,7 @@ class MainActivity : AppCompatActivity() {
 
     fun onSendMessageButtonClick(view: View) {
         if (App.sharedPreferences.isLoggedIn &&
-                messageTextField.text.isNotEmpty() && selectedChannel != null){
+                messageTextField.text.isNotEmpty() && selectedChannel != null) {
             val userId = UserDataService.id
             val channelId = selectedChannel!!.id
             // when sending message, the order of parameters is important,
